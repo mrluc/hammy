@@ -44,8 +44,6 @@ Luc Fueston
 
 ## But I live half of each year in .lg[South America.]
 
-![tube](img/tube_so_close.gif)
-
 ---
 
 .center
@@ -92,30 +90,9 @@ macros are
 
 # Named AST transforms
 
----
+non-snarky reminder:
 
-.x2[We type: `.coffeescript 2+2`]
-
-.x2[String: `32 20 2B 20 32`]
-
-.x2[Tokens:]
-    
-    .ruby
-    .little[[['NUMBER','2',0], ['+','+',0], ['NUMBER','2',0], ['TERMINATOR','\n',0]]]
-
-.x2[Abstract Syntax Tree:]
-
-    .coffee
-    expressions: [
-      operator: '+',
-      first: { base: { value: 2}, properties: [ ]
-      },
-      second: { base: { value: 2}, properties: [ ]
-      },
-      flip: false
-    ]
-
-# ^ Meta Goes Here
+# String -> Tokens -> AST
 
 ---
 
