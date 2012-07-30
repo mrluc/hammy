@@ -157,38 +157,25 @@ Macros can be used for the same purpose as macro methods.
 
 ---
 
-.middle
-
-# Control Flow Thought Experiment:
-
-### `if`, `then`, and `else` are named 
-### `AscertainingThat`, `BeItResolved` and `Contrariwise`.
-
-### All other control structures in the language have even longer names.
-
-### Would you write a DSL for `if`?
-
----
-
 # Control Flow Though Experiment
 
 ## Compile-time > run-time for control structures.
 
     def iif(cond, ok, notok) 
-      AscertainingThat cond 
-        ok.call()            # d'oh!
-      Contrariwise 
-        notok.call()         # d'oh!
+      if cond 
+        ok.call()            # slowness d'oh!
+      else 
+        notok.call()         # slowness d'oh!
       end 
     end
 
     iif 2 > 1, 
-      ->{ p "success!"}, 
-      ->{ p "humbuggery!"}
+      ->{ p "success!"},     # user d'oh!
+      ->{ p "humbuggery!"}   # user d'oh!
 
-# Macros have no run-time penalty
+    # twice the lambdas for 'elseif'
 
-## They can compile down to efficient, wordy code.
+## Macros have no inherent runtime penalty.
 
 ---
 
@@ -223,7 +210,7 @@ in coffeescript
 .middle
 
 ## .center.x2[ Not a fork]
-# .center[ Wraps CoffeeScript ]
+# .center[ Wraps CoffeeScript, does two things ]
 
     nodes: (str, strict=@strict)=>
 
@@ -241,6 +228,8 @@ in coffeescript
 
 .center.middle
 
+87 lines
+
 Annotated source with Docco
 
 ![docco](img/implementation.jpg)
@@ -257,14 +246,14 @@ Boy, it would be embarrassing if that didn't work right now.
 
 # Require it, then require files with macros
 
-No macros in the entry file
+## No macros in the entry file
 
     require 'macros.coffee'
     app = require 'my-app' #now it hooks nodejs require()
     
     app.start()
 
-Declaration keeps everything from macroexpanding
+## Declaration in files with macros
 
     .coffeescript
     'use macros'
@@ -287,19 +276,32 @@ Declaration keeps everything from macroexpanding
 
 .x2[ `.ruby 'in macros.name'` ]
 
+---
+
+.middle.center
+
+Debugging is ... interesting.
+
+Compiling works, but is meh.
+
+jashenkas could break AST deepcopy with a single well-placed closure
+
+don't have a 'vision' yet for lots of biggish questions.
 
 ---
 
 .x2.middle.center
 
-# What Can It Do?
+# what good is it?
 
 ---
 
 .x2.middle
 
-### spanish list comprehensions
-### async control flow
+if you're doing:
+
+### language experiments
+### ast mangling (control flow)
 
 ---
 
@@ -398,19 +400,11 @@ inside the loop
 
 .middle.big
 
-# Ruby Issues
+# Closure.
 
-- _RubyMacros_
+# Compilation.
 
-  - use a special require
-  - requires RedParse
-  - about 2 years old
-
-- _rbx transforms_ - GoGaRuCo 2011 lightning talk on this. Yehuda seems interested in them.
-
-  - Rubinius only
-  - no one has written actual macros yet
-  - but you could totally do it
+## two abstractions that work great together
 
 ---
 
@@ -452,6 +446,26 @@ inside the loop
 ## Languages where macros turned out to be a mistake:
 
 - Maybe CoffeeScript, now.
+
+---
+
+.big
+
+# Ruby Issues
+
+- _RubyMacros_ - real macros
+
+  - use a special require
+  - requires RedParse
+  - about 2 years old
+
+- _rbx transforms_ - GoGaRuCo 2011 lightning talk on this. Yehuda seems interested in them.
+
+  - Rubinius only
+  - no one has written actual macros yet
+  - but you could totally do it
+
+- __Ruby needs canonical representation.__
 
 ---
 
