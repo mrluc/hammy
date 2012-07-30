@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Macros Without Parentheses</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="js/remark-0.3.5.min.js" type="text/javascript"></script>
+    <script src="js/highlight-coffee.js" type="text/javascript"></script>
+    <link rel='stylesheet' href="css/github.css">
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata'
+    rel='stylesheet' type='text/css'>
+    <style type="text/css" media="screen">
+      /* Slideshow styles */
+
+      .slide img { max-width: 100%; }
+      h1, h2, h3, h4, h5 { font-weight: normal; }
+      code, pre { 
+        font-size: 1.1em !important;
+        font-family: 'Inconsolata', Menlo, Consolas, Monaco, monospace !important;
+      }
+      .hl { background-color: #ff8; }
+      .sm { font-size:0.6em } .little{font-size:0.8em;}
+      .big{font-size: 1.5em}
+      .x2 { font-size: 2.0em; }
+      .lg, .x3 { font-size:3em; } .x4{font-size:4em;}
+      .huge { font-size:5em } .x6{font-size: 6em;}
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+.center.middle
+.x6[ Macros ] .x3[Without] .huge[ Parentheses ]
+
+<br/>
+<br/>
+<br/>
+Luc Fueston
+
+---
+
+.center.middle
+
+## I'm from .x2[MN]
+
+## But I live half of each year in .lg[South America.]
+
+![tube](img/tube_so_close.gif)
+
+---
+
+.center
+
+### No waves = .x2[Lisp-style macros] for .x2[CoffeeScript] .sm[in < 100 lines]
+
+![ hammock driven development ](img/ecu_code.jpg)
+
+---
+
+# Not because I'm a wise Lisp Greybeard.
+
+# Because
+
+## I ♥ Ruby and CoffeeScript, and .x2[macros are what you miss about Lisp.]
+
+---
+
+# Not because I'm a wise Lisp Greybeard.
+
+# Because
+
+## I ♥ Ruby and CoffeeScript, and .x2[macros are what you miss about Lisp.]
+
+.center.x2[ `.lisp (setf x 4)` ]
+
+.x4[ When you inevitably] .x6[ leave. ]
+
+---
+
+.middle
+
+# 1. What are macros?
+
+# 2. Introducing macros.coffee
+
+# 3. The view from Ruby
+
+---
+
+.center.middle
+
+macros are
+
+# Named AST transforms
+
+---
+
+.x2[We type: `.coffeescript 2+2`]
+
+.x2[String: `32 20 2B 20 32`]
+
+.x2[Tokens:]
+    
+    .ruby
+    .little[[['NUMBER','2',0], ['+','+',0], ['NUMBER','2',0], ['TERMINATOR','\n',0]]]
+
+.x2[Abstract Syntax Tree:]
+
+    .coffee
+    expressions: [
+      operator: '+',
+      first: { base: { value: 2}, properties: [ ]
+      },
+      second: { base: { value: 2}, properties: [ ]
+      },
+      flip: false
+    ]
+
+# ^ Meta Goes Here
+
+---
+
+.center.middle
+
+# So, if you want macros.
+
+## What do you do to the AST?
+
+---
+
+.center.middle
+
+# Do Two Things to the AST
+
+![Macro Stage Visualized](img/macros_diagram.png)
+
+## Find and compile named definitions
+
+## Apply definitions to calls
+
+---
+
+.center.middle
+
+# So, once you have macros.
+
+## What do you do with them?
+
+---
+
+.middle
+
+# 1. Domain Specific Languages
+
+# 2. Control Flow
+
+---
+
+# Domain-Specific Languages
+
+Macros can be used for the same purpose as macro methods.
+
+    .ruby
+    obj = fighter do
+      acts_like :beserker
+      
+      attack do
+        flail_wildly
+      do
+    end
+
+    # if Ruby had macros, might compile to: 
+    obj = Fighter.new.instance_exec { 
+      include get_behavior_module(:beserker) 
+      
+      def attack() 
+        super @enemy, :flail_wildly 
+      end
+      self
+    }
+
+---
+
+.middle
+
+# Control Flow Thought Experiment:
+
+### `if`, `then`, and `else` are named 
+### `AscertainingThat`, `BeItResolved` and `Contrariwise`.
+
+### All other control structures in the language have even longer names.
+
+### Would you write a DSL for `if`?
+
+---
+
+# Control Flow Though Experiment
+
+## Compile-time > run-time for control structures.
+
+    def iif(cond, ok, notok) 
+      AscertainingThat cond 
+        ok.call()            # d'oh!
+      Contrariwise 
+        notok.call()         # d'oh!
+      end 
+    end
+
+    iif 2 > 1, 
+      ->{ p "success!"}, 
+      ->{ p "humbuggery!"}
+
+# Macros have no run-time penalty
+
+## They can compile down to efficient, wordy code.
+
+---
+
+.middle
+
+# Know what you want to say?
+
+# Know what you want it to mean?
+
+# Both expressions parse?<br/><br/>
+
+# .x2[Macros can do that.]
+
+---
+
+.x3.center.middle
+
+in coffeescript
+
+---
+
+.center.middle
+
+.lg[macros.coffee is]
+
+#### a straightforward implementation that works as described
+
+![Macro Stage Visualized](img/macros_diagram.png)
+
+---
+
+.middle
+
+## .center.x2[ Not a fork]
+# .center[ Wraps CoffeeScript ]
+
+    nodes: (str, strict=@strict)=>
+
+      @ast = CoffeeScript.nodes str
+
+      if !strict or uses_macros(@ast) 
+                
+        @find_and_compile_macros()           #1 definitions
+
+        @macroexpand() until @all_expanded() #2 calls
+
+      @ast
+
+---
+
+.center.middle
+
+Annotated source with Docco
+
+![docco](img/implementation.jpg)
+
+---
+
+.middle.center
+
+.x2[`npm install macros.coffee`]
+
+Boy, it would be embarrassing if that didn't work right now.
+
+---
+
+# Require it, then require files with macros
+
+No macros in the entry file
+
+    require 'macros.coffee'
+    app = require 'my-app' #now it hooks nodejs require()
+    
+    app.start()
+
+Declaration keeps everything from macroexpanding
+
+    .coffeescript
+    'use macros'
+
+    mac instant_2_plus_2 (n)->
+      backquote {z:2}, quote ->
+        z + z
+    
+    instant_2_plus_2()
+
+---
+
+.middle
+
+# Namespaces are coming (easy)
+
+## They'll be declarations too:
+
+.x2[ `.ruby 'use macros.name'` ]
+
+.x2[ `.ruby 'in macros.name'` ]
+
+
+---
+
+.x2.middle.center
+
+# What Can It Do?
+
+---
+
+.x2.middle
+
+### spanish list comprehensions
+### async control flow
+
+---
+
+.big
+
+## .center[ QUIZ ]
+
+    x = 37
+
+    x for x in [1..10]
+
+    console.log x
+
+(a) `.coffeescript x is 37` 
+
+(b) `.coffeescript x is 10` 
+
+---
+
+.big
+
+## .center[ QUIZ ]
+
+    x = 37
+
+    x for x in [1..10]
+
+    console.log x
+
+<s> (a) `.coffeescript x is 37` </s>
+
+<s> (b) `.coffeescript x is 10` </s>
+
+(c) `.coffeescript x is 11`
+
+---
+
+.middle
+
+# gensyms to the rescue
+## 'para': list comprehensions in spanish
+
+    .coffeescript
+    x = 37
+    para .hl[x] en [1..10] si (.hl[x] > 3) hazte eso pues -> .hl[x]
+    x is 37
+
+inside the loop
+
+    .javascript
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      .hl[x_g9] = _ref[_i];
+      if (.hl[x_g9] > 3) {
+        .hl[x_g9];
+
+      }
+    }
+
+---
+
+.middle.big
+
+# async control flow
+
+    .coffeescript
+    if x = async_fn .hl[cc()]
+      p x
+    else
+      p "Onoz"
+
+---
+
+.middle.big
+
+## `cc` is a 20-line macro
+
+    .javascript
+    agreet(function(__thang) {
+      var x;
+      if (x = __thang) {
+        p(x);
+      } else {
+        p('Ohnoz');
+      }
+    });
+
+---
+
+.middle.big
+
+# If you mangle the AST,
+
+# why not use an abstraction built for it?
+
+---
+
+.middle.big
+
+# Ruby Issues
+
+- _RubyMacros_
+
+  - use a special require
+  - requires RedParse
+  - about 2 years old
+
+- _rbx transforms_ - GoGaRuCo 2011 lightning talk on this. Yehuda seems interested in them.
+
+  - Rubinius only
+  - no one has written actual macros yet
+  - but you could totally do it
+
+---
+
+.big
+
+# Macros only work in:
+
+- Lisps and '()-like languages, including Clojure
+
+---
+
+.big
+
+# Macros only work in:
+
+- Lisps and '()-like languages, including Clojure
+- MetaLua
+- Potion (_why's language)
+- __Factor__
+- __Julia__
+- others
+
+## Languages where macros turned out to be a mistake:
+
+
+---
+
+.big
+
+# Macros only work in:
+
+- Lisps and '()-like languages, including Clojure
+- MetaLua
+- Potion (_why's language)
+- __Factor__
+- __Julia__
+- others
+
+## Languages where macros turned out to be a mistake:
+
+- Maybe CoffeeScript, now.
+
+---
+
+.middle.big
+
+# Books on Macros
+
+## Free
+
+- _On Lisp_ - pg
+
+- _Let Over Lambda_ - Hoyte
+
+## Non-free
+
+- _PAIP_ - Norvig
+
+---
+
+.center.middle
+
+no way there's time for
+
+# .x2[ Questions? ]
+
+superluc@gmail.com
+
+github.com/mrluc/macros.coffee
+<br><br><br><br><br><br>
+Thanks Ruby.mn ♥
+
+    </textarea>
+    <div id="slideshow"></div>
+  </body>
+</html>
